@@ -158,7 +158,7 @@ function ocrProcess_v1(cvs){
 	if(debugMode){
 		document.body.append(cvs);
 	}
-
+	
 	let detectCount = 0;
 	function detectChar(data, width, height){
 		let charData = OCR.getCharData(data, width, height, options.samplingLevel);
@@ -562,42 +562,48 @@ function main(){
 	[inputs.getCodeButton_v1, inputs.getCodeButton_v2].forEach(button => {
 		button.addEventListener('click', () => {
 			if(cvs.imageLoaded){
-				/* data process */
-				if(options.samplingLevel !== inputs.samplingLevel.value || options.fontName !== inputs.fontName.value || options.fontDataRange !== inputs.fontDataRange.value){
-					options.samplingLevel = inputs.samplingLevel.value;
-					options.fontName = inputs.fontName.value;
-					options.fontDataRange = inputs.fontDataRange.value;
-					let fontNameList = options.fontName.replace(/ *, */g, ',').split(',');
-					let fontDataRange = JSON.parse(options.fontDataRange);
-					for(let key in fontData){
-						delete fontData[key];
+				try{
+					/* data process */
+					if(options.samplingLevel !== inputs.samplingLevel.value || options.fontName !== inputs.fontName.value || options.fontDataRange !== inputs.fontDataRange.value){
+						options.samplingLevel = inputs.samplingLevel.value;
+						options.fontName = inputs.fontName.value;
+						options.fontDataRange = inputs.fontDataRange.value;
+						let fontNameList = options.fontName.replace(/ *, */g, ',').split(',');
+						let fontDataRange = JSON.parse(options.fontDataRange);
+						for(let key in fontData){
+							delete fontData[key];
+						}
+						for(let fontName of fontNameList){
+							if(fontName in fontDataRange){
+								fontDataGenerateFunctionList.custom(fontName, fontDataRange[fontName]);
+							}
+							else if(fontName in fontDataGenerateFunctionList){
+								fontDataGenerateFunctionList[fontName]();
+							}
+							else{
+								fontDataGenerateFunctionList.default(fontName);
+							}
+						}
 					}
-					for(let fontName of fontNameList){
-						if(fontName in fontDataRange){
-							fontDataGenerateFunctionList.custom(fontName, fontDataRange[fontName]);
-						}
-						else if(fontName in fontDataGenerateFunctionList){
-							fontDataGenerateFunctionList[fontName]();
-						}
-						else{
-							fontDataGenerateFunctionList.default(fontName);
-						}
-					}
+					options.codeLanguage = inputs.codeLanguage.value;
+					/* OCR */
+					const codeRect = document.getElementById('codeRect');
+					let rectData = [codeRect['rectDot-left']*cvs.width, codeRect['rectDot-top']*cvs.height, codeRect['rectDot-right']*cvs.width, codeRect['rectDot-bottom']*cvs.height].map(n => Math.floor(n));
+					const newCvs = document.createElement('canvas');
+					const newCtx = newCvs.getContext('2d');
+					newCvs.width = rectData[2] - rectData[0];
+					newCvs.height = rectData[3] - rectData[1];
+					newCtx.drawImage(cvs, -rectData[0],  -rectData[1]);
+					// document.getElementById('bottomBox').appendChild(newCvs);
+					let codeContent;
+					codeContent = ([ocrProcess_v1, ocrProcess_v2][button.id.split('_v')[1] - 1])(newCvs);
+					document.getElementById('codeOutput').innerHTML = hljs.highlight(codeContent, {language: options.codeLanguage}).value;
+					outputs.push(codeContent);
+					alert('Code extraction completed.', 'compleat');
 				}
-				options.codeLanguage = inputs.codeLanguage.value;
-				/* OCR */
-				const codeRect = document.getElementById('codeRect');
-				let rectData = [codeRect['rectDot-left']*cvs.width, codeRect['rectDot-top']*cvs.height, codeRect['rectDot-right']*cvs.width, codeRect['rectDot-bottom']*cvs.height].map(n => Math.floor(n));
-				const newCvs = document.createElement('canvas');
-				const newCtx = newCvs.getContext('2d');
-				newCvs.width = rectData[2] - rectData[0];
-				newCvs.height = rectData[3] - rectData[1];
-				newCtx.drawImage(cvs, -rectData[0],  -rectData[1]);
-				// document.getElementById('bottomBox').appendChild(newCvs);
-				let codeContent = ([ocrProcess_v1, ocrProcess_v2][button.id.split('_v')[1] - 1])(newCvs);
-				document.getElementById('codeOutput').innerHTML = hljs.highlight(codeContent, {language: options.codeLanguage}).value;
-				outputs.push(codeContent);
-				alert('Code extraction completed.', 'compleat');
+				catch(error){
+					alert(error.toString(), 'error');
+				}
 			}
 			else alert('Please open an image first!', 'warning');
 		});

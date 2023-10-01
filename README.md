@@ -56,5 +56,6 @@ This project is a project that can be run on a pure client, so `index.html` can 
 ## new version update
 
 * v1.0.0 2023/09/30 First Edition
-* v1.0.1 2023/10/01 Fixed data processing error
-	* Fixed the rectangular font processing error during OCR data processing
+* v1.0.1 2023/10/01 Processing and Display Errors
+	* Fixed the rectangular font processing error during OCR data processing.
+	* Added error message pop-up display.
