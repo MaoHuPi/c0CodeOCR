@@ -155,6 +155,10 @@ function renderDebugFontDataImage(font, charName){
 }
 
 function ocrProcess_v1(cvs){
+	if(debugMode){
+		document.body.append(cvs);
+	}
+
 	let detectCount = 0;
 	function detectChar(data, width, height){
 		let charData = OCR.getCharData(data, width, height, options.samplingLevel);
@@ -172,17 +176,16 @@ function ocrProcess_v1(cvs){
 		let deltaMin = Math.min(...deltaData.map(l => l[1]));
 		let usableChars = deltaData.filter(l => l[1] <= deltaMin+0.04).sort((l1, l2) => l1[1] - l2[1]);
 
-		usableCount = {};
-		for(let char of usableChars.map(s => s[0].split('%comma%')[1])){
-			if(usableCount[char] === undefined){
-				usableCount[char] = 0;
-			}
-			usableCount[char]++;
-		}
+		// usableCount = {};
+		// for(let char of usableChars.map(s => s[0].split('%comma%')[1])){
+		// 	if(usableCount[char] === undefined){
+		// 		usableCount[char] = 0;
+		// 	}
+		// 	usableCount[char]++;
+		// }
 
 		// console.log(usableChars.map(s => `${s[0].split('%comma%')[1]} ${s[1]}`).join(' '));
 		// let resemblanceChar = usableChars[Math.floor(usableChars.length * Math.random())];
-		console.log(usableChars);
 		let resemblanceChar = usableChars[0];
 		resemblanceChar = resemblanceChar[0].split('%comma%');
 		detectCount++;
@@ -305,8 +308,10 @@ function ocrProcess_v1(cvs){
 			let charRect = [linesCharsX[l][c][0], linesY[l][0], linesCharsX[l][c][1]-linesCharsX[l][c][0], linesY[l][1] - linesY[l][0]];
 			codeLine += detectChar(OCR.cutImage(data, cvs.width, cvs.height, ...charRect), charRect[2], charRect[3]);
 
-			// ctx.strokeStyle = '#00ff00';
-			// ctx.strokeRect(...charData);
+			if(debugMode){
+				ctx.strokeStyle = '#00ff00';
+				ctx.strokeRect(...charRect);
+			}
 		}
 		codeContent.push(codeLine);
 	}
