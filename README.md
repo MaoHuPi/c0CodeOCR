@@ -59,3 +59,10 @@ This project is a project that can be run on a pure client, so `index.html` can 
 * v1.0.1 2023/10/01 Processing and Display Errors
 	* Fixed the rectangular font processing error during OCR data processing.
 	* Added error message pop-up display.
+* v1.1.0 2023/10/07 Performance optimization
+	* Write the OCR function independently as a class
+	* Rewrite the data processing function in OCR using WASM
+
+## TODO
+
+- [ ] Added prompt pane during processing (using worker)
